@@ -70,6 +70,19 @@ export default {
         console.log(`子iframe：${this.typeText}，接收到父页面传递过来的初始化数据`,e.data)
         this.aVueMsg=e.data
         this.aVueOptions = e.data?.aVueOptions
+        this.aVueOptions.column.forEach((col)=>{
+          const event=['change','click','focus','blur']
+          const stringToFunc=(string)=>{
+            if(string&&typeof string==='string'){
+              return eval(string)
+            }else {
+              return string
+            }
+          }
+          event.forEach((e)=>{
+            col[e]=stringToFunc(col[e])
+          })
+        })
       }
       if(e.data?.aVueValue){
         this.aVueValue=e.data?.aVueValue
@@ -99,6 +112,20 @@ export default {
         aVueOptions: val,
         aVueType:'Design'
       }
+
+      msg.aVueOptions.column.forEach((col)=>{
+        const event=['change','click','focus','blur']
+        const funcToString=(func)=>{
+          if(func&&typeof func==='function'){
+            return func.toString()
+          }else {
+            return func
+          }
+        }
+        event.forEach((e)=>{
+          col[e]=funcToString(col[e])
+        })
+      })
       console.log(`子iframe：${this.typeText}，点击保存向父页面传递数据`,msg)
       window.parent.postMessage(msg, '*');
     },
