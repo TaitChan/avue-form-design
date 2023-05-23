@@ -1,9 +1,32 @@
 <template>
   <div id="app">
-    <avue-form-design style="height: 100vh;"
-                      :options="options"
-                      @submit="handleSubmit"
-                      :custom-fields="customFields"></avue-form-design>
+<!--    表单渲染器，预览、创建、编辑-->
+    <avue-form v-if="formParser||formNew||formEdit" v-model="aVueValue" :option="aVueOptions"  @submit="handleSaveForm"/>
+<!--    表单详情-->
+    <div v-else-if="formDetail">
+      <ul>
+        <li v-for="item in aVueOptions.column" :key="item.prop">
+          <label>{{item.label}}</label>
+          <template v-if="item.props&&item.dicData">
+            <!--            有数据字典-->
+            <template v-if="Array.isArray(aVueValue[item.prop])">
+              <!--            多选的数组-->
+              <span v-for="propItem in aVueValue[item.prop]" :key="propItem">
+                {{item.dicData.find((v)=>v[item.props.value]===propItem)[item.props.label]}}&nbsp;
+              </span>
+            </template>
+            <template v-else>
+              {{item.dicData.find((v)=>v[item.props.value]===aVueValue[item.prop])[item.props.label]}}
+            </template>
+          </template>
+          <template v-else>
+            {{aVueValue[item.prop]}}
+          </template>
+        </li>
+      </ul>
+    </div>
+<!--    表单设计器-->
+    <avue-form-design v-else :options="aVueOptions" @submit="handleSaveFormDesign"/>
   </div>
 </template>
 
@@ -12,44 +35,82 @@ export default {
   name: 'app',
   data() {
     return {
-      customFields: [
-        {
-          title: '分割线',
-          component: 'el-divider',//ele分割线
-          span: 24,
-          icon: 'el-icon-eleme',
-          tips: '看我：自定义属性怎么用？',
-          labelWidth: '0px',
-          params: {
-            html: '<h3 style="color:red">分割线标题</h3>',
-            contentPosition: "left",
-          }
-        },
-        {
-          title: '警告',
-          component: 'el-alert',
-          labelWidth: '0px',
-          span: 24,
-          icon: 'el-icon-warning',
-          tips: '看我：自定义事件怎么用？',
-          params: {
-            title: '警告警告警告警告',
-            type: 'success'
-          },
-          event: {
-            close: eval(`() => {
-    console.log('alert关闭事件')
-  }`)
-          }
-        },
-      ],
-      options: {},
+      aVueMsg:{},
+      aVueOptions: {
+        submitBtn: false,
+        emptyBtn: false,
+      },
+      aVueValue:{},
+      formParser:window.location.href.includes('formParser'),
+      formDetail:window.location.href.includes('formDetail'),
+      formEdit:window.location.href.includes('formEdit'),
+      formNew:window.location.href.includes('formNew'),
     }
   },
+  computed:{
+    typeText(){
+      if(this.formParser){
+        return '表单渲染器：预览'
+      }else if(this.formNew){
+        return '表单渲染器：创建'
+      }else if(this.formEdit){
+        return '表单渲染器：编辑'
+      } else if(this.formDetail){
+        return '表单详情'
+      }else {
+        return '表单设计器'
+      }
+    }
+  },
+  mounted(){
+    console.log(`子iframe当前展示的是：${this.typeText}`,window.location.href)
+    window.parent.postMessage({type: 'childStatus', data: 'isReady'}, '*')
+    window.addEventListener('message', (e) => {
+      if(e.data?.aVueOptions){
+        console.log(`子iframe：${this.typeText}，接收到父页面传递过来的初始化数据`,e.data)
+        this.aVueMsg=e.data
+        this.aVueOptions = e.data?.aVueOptions
+      }
+      if(e.data?.aVueValue){
+        this.aVueValue=e.data?.aVueValue
+      }
+    });
+  },
+  watch: {
+    aVueValue: {
+      handler(val) {
+        if(val && Object.keys(val).length>0 && this.aVueOptions.submitBtn === false){
+          const msg={
+            ...this.aVueMsg,
+            aVueValue: val,
+            aVueType:'New:v-model'
+          }
+          console.log(`子iframe：${this.typeText}，更新后实时向父页面传递数据`,msg)
+          window.parent.postMessage(msg, '*');
+        }
+      },
+      deep: true,
+    },
+  },
   methods: {
-    handleSubmit(val) {
-      this.$message.success("查看控制台")
-      console.log(val);
+    handleSaveFormDesign(val) {
+      const msg = {
+        ...this.aVueMsg,
+        aVueOptions: val,
+        aVueType:'Design'
+      }
+      console.log(`子iframe：${this.typeText}，点击保存向父页面传递数据`,msg)
+      window.parent.postMessage(msg, '*');
+    },
+    handleSaveForm(val,done) {
+      done()
+      const msg={
+        ...this.aVueMsg,
+        aVueValue: val,
+        aVueType:'New:submit'
+      }
+      console.log(`子iframe：${this.typeText}，点击保存向父页面传递数据`,msg)
+      window.parent.postMessage(msg, '*');
     },
   }
 }

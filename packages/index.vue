@@ -138,6 +138,12 @@
                        size="medium"
                        icon="el-icon-view"
                        @click="handlePreview">预览</el-button>
+            <el-button v-if="toolbar.includes('save')"
+                       class="success"
+                       type="text"
+                       size="medium"
+                       icon="el-icon-document-add"
+                       @click="handleSave">保存</el-button>
             <el-button v-if="toolbar.includes('clear')"
                        class="danger"
                        type="text"
@@ -328,12 +334,12 @@ export default {
     },
     showGithubStar: {
       type: Boolean,
-      default: true
+      default: false
     },
     toolbar: {
       type: Array,
       default: () => {
-        return ['import', 'generate', 'preview', 'clear']
+        return ['import', 'generate', 'preview', 'save', 'clear']
       }
     },
     undoRedo: {
@@ -435,7 +441,7 @@ export default {
         index: 0, // 当前下标
         maxStep: 20, // 最大记录步数
         steps: [], // 历史步数
-      }
+      },
     }
   },
   mounted() {
@@ -582,6 +588,12 @@ export default {
       this.$refs.form.resetForm()
       this.form = {}
       this.previewVisible = false
+    },
+    // 保存 - 接口
+    handleSave(){
+      this.transformToAvueOptions(this.widgetForm).then(data => {
+        this.$emit('submit', data)
+      })
     },
     // 清空
     handleClear() {
