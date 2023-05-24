@@ -1,7 +1,7 @@
 <template>
   <div id="app">
 <!--    表单渲染器，预览、创建、编辑-->
-    <avue-form v-if="formParser||formNew||formEdit" v-model="aVueValue" :option="aVueOptions"  @submit="handleSaveForm"/>
+    <avue-form id="avue-form" v-if="formParser||formNew||formEdit" v-model="aVueValue" :option="aVueOptions"  @submit="handleSaveForm"/>
 <!--    表单详情-->
     <div v-else-if="formDetail">
       <ul>
@@ -35,6 +35,7 @@ export default {
   name: 'app',
   data() {
     return {
+      avueFormHeight:null,
       aVueMsg:{},
       aVueOptions: {
         submitBtn: false,
@@ -70,19 +71,22 @@ export default {
         console.log(`子iframe：${this.typeText}，接收到父页面传递过来的初始化数据`,e.data)
         this.aVueMsg=e.data
         this.aVueOptions = e.data?.aVueOptions
-        if(this.typeText==='表单设计器'){
-          this.aVueOptions.column.forEach((col)=>{
-            const event=['change','click','focus','blur']
-            const stringToFunc=(string)=>{
-              if(string&&typeof string==='string'){
-                return eval(string)
-              }else {
-                return string
-              }
+        this.aVueOptions.column.forEach((col)=>{
+          const event=['change','click','focus','blur']
+          const stringToFunc=(string)=>{
+            if(string&&typeof string==='string'){
+              return eval(string)
+            }else {
+              return string
             }
-            event.forEach((e)=>{
-              col[e]=stringToFunc(col[e])
-            })
+          }
+          event.forEach((e)=>{
+            col[e]=stringToFunc(col[e])
+          })
+        })
+        if(this.formNew){
+          this.$nextTick(()=>{
+            this.avueFormHeight=document.getElementById('avue-form').clientHeight
           })
         }
       }
@@ -92,6 +96,13 @@ export default {
     });
   },
   watch: {
+    avueFormHeight:{
+      handler(val){
+        if(val){
+          window.parent.postMessage({type: 'avueFormHeight', data: val}, '*')
+        }
+      }
+    },
     aVueValue: {
       handler(val) {
         if(val && Object.keys(val).length>0 && this.aVueOptions.submitBtn === false){
@@ -101,7 +112,7 @@ export default {
             aVueType:'New:v-model'
           }
           console.log(`子iframe：${this.typeText}，更新后实时向父页面传递数据`,msg)
-          window.parent.postMessage(msg, '*');
+          this.postMessage(msg)
         }
       },
       deep: true,
@@ -114,7 +125,20 @@ export default {
         aVueOptions: val,
         aVueType:'Design'
       }
-
+      console.log(`子iframe：${this.typeText}，点击保存向父页面传递数据`,msg)
+      this.postMessage(msg)
+    },
+    handleSaveForm(val,done) {
+      done()
+      const msg={
+        ...this.aVueMsg,
+        aVueValue: val,
+        aVueType:'New:submit'
+      }
+      console.log(`子iframe：${this.typeText}，点击保存向父页面传递数据`,msg)
+      this.postMessage(msg)
+    },
+    postMessage(msg){
       msg.aVueOptions.column.forEach((col)=>{
         const event=['change','click','focus','blur']
         const funcToString=(func)=>{
@@ -128,19 +152,8 @@ export default {
           col[e]=funcToString(col[e])
         })
       })
-      console.log(`子iframe：${this.typeText}，点击保存向父页面传递数据`,msg)
       window.parent.postMessage(msg, '*');
-    },
-    handleSaveForm(val,done) {
-      done()
-      const msg={
-        ...this.aVueMsg,
-        aVueValue: val,
-        aVueType:'New:submit'
-      }
-      console.log(`子iframe：${this.typeText}，点击保存向父页面传递数据`,msg)
-      window.parent.postMessage(msg, '*');
-    },
+    }
   }
 }
 </script>
