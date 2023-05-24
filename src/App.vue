@@ -70,19 +70,21 @@ export default {
         console.log(`子iframe：${this.typeText}，接收到父页面传递过来的初始化数据`,e.data)
         this.aVueMsg=e.data
         this.aVueOptions = e.data?.aVueOptions
-        this.aVueOptions.column.forEach((col)=>{
-          const event=['change','click','focus','blur']
-          const stringToFunc=(string)=>{
-            if(string&&typeof string==='string'){
-              return eval(string)
-            }else {
-              return string
+        if(this.typeText==='表单设计器'){
+          this.aVueOptions.column.forEach((col)=>{
+            const event=['change','click','focus','blur']
+            const stringToFunc=(string)=>{
+              if(string&&typeof string==='string'){
+                return eval(string)
+              }else {
+                return string
+              }
             }
-          }
-          event.forEach((e)=>{
-            col[e]=stringToFunc(col[e])
+            event.forEach((e)=>{
+              col[e]=stringToFunc(col[e])
+            })
           })
-        })
+        }
       }
       if(e.data?.aVueValue){
         this.aVueValue=e.data?.aVueValue
