@@ -129,8 +129,6 @@ export default {
         })
       })
       console.log(`子iframe：${this.typeText}，点击保存向父页面传递数据`,msg)
-      console.log(window)
-      console.log(window.parent)
       window.parent.postMessage(msg, '*');
     },
     handleSaveForm(val,done) {
