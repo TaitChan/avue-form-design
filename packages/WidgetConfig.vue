@@ -155,7 +155,7 @@
                          value="right"></el-option>
             </el-select>
           </el-form-item>
-          <el-form-item v-if="!['color', 'dynamic', 'group', 'ueditor', 'upload', 'map'].includes(data.type)"
+          <el-form-item v-if="!['color', 'dynamic', 'group', 'upload', 'map'].includes(data.type)"
                         label="默认值">
             <template v-if="defaultValues && defaultValues[data.type]">
               <el-select v-model="data.value"

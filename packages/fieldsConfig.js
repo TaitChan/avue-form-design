@@ -333,7 +333,7 @@ export default [
     }],
   },
   {
-    title: '插件字段（需单独引入依赖）',
+    title: '插件字段',
     list: [{
       type: 'ueditor',
       component: 'avue-ueditor',
