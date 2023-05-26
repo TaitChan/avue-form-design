@@ -72,6 +72,9 @@ export default {
         this.aVueMsg=e.data
         this.aVueOptions = e.data?.aVueOptions
         this.aVueOptions.column.forEach((col)=>{
+          if(col.value){
+            this.aVueValue[col.prop]=col.value
+          }
           const event=['change','click','focus','blur']
           const stringToFunc=(string)=>{
             if(string&&typeof string==='string'){
@@ -91,7 +94,7 @@ export default {
         }
       }
       if(e.data?.aVueValue){
-        this.aVueValue=e.data?.aVueValue
+        this.aVueValue={...this.aVueValue,...e.data?.aVueValue}
       }
     });
   },
