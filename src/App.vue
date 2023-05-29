@@ -3,28 +3,29 @@
 <!--    表单渲染器，预览、创建、编辑-->
     <avue-form id="avue-form" v-if="formParser||formNew||formEdit" v-model="aVueValue" :option="aVueOptions"  @submit="handleSaveForm"/>
 <!--    表单详情-->
-    <div v-else-if="formDetail">
-      <ul>
-        <li v-for="item in aVueOptions.column" :key="item.prop">
-          <label>{{item.label}}</label>
-          <template v-if="item.props&&item.dicData">
-            <!--            有数据字典-->
-            <template v-if="Array.isArray(aVueValue[item.prop])">
-              <!--            多选的数组-->
-              <span v-for="propItem in aVueValue[item.prop]" :key="propItem">
-                {{item.dicData.find((v)=>v[item.props.value]===propItem)[item.props.label]}}&nbsp;
-              </span>
-            </template>
-            <template v-else>
-              {{item.dicData.find((v)=>v[item.props.value]===aVueValue[item.prop])[item.props.label]}}
-            </template>
-          </template>
-          <template v-else>
-            {{aVueValue[item.prop]}}
-          </template>
-        </li>
-      </ul>
-    </div>
+    <avue-form id="avue-form" v-else-if="formDetail" v-model="aVueValue" :option="aVueOptions"/>
+<!--    <div v-else-if="formDetail">-->
+<!--      <ul>-->
+<!--        <li v-for="item in aVueOptions.column" :key="item.prop">-->
+<!--          <label>{{item.label}}</label>-->
+<!--          <template v-if="item.props&&item.dicData">-->
+<!--            &lt;!&ndash;            有数据字典&ndash;&gt;-->
+<!--            <template v-if="Array.isArray(aVueValue[item.prop])">-->
+<!--              &lt;!&ndash;            多选的数组&ndash;&gt;-->
+<!--              <span v-for="propItem in aVueValue[item.prop]" :key="propItem">-->
+<!--                {{item.dicData.find((v)=>v[item.props.value]===propItem)[item.props.label]}}&nbsp;-->
+<!--              </span>-->
+<!--            </template>-->
+<!--            <template v-else>-->
+<!--              {{item.dicData.find((v)=>v[item.props.value]===aVueValue[item.prop])[item.props.label]}}-->
+<!--            </template>-->
+<!--          </template>-->
+<!--          <template v-else>-->
+<!--            {{aVueValue[item.prop]}}-->
+<!--          </template>-->
+<!--        </li>-->
+<!--      </ul>-->
+<!--    </div>-->
 <!--    表单设计器-->
     <avue-form-design v-else :options="aVueOptions" @submit="handleSaveFormDesign"/>
   </div>
@@ -35,7 +36,7 @@ export default {
   name: 'app',
   data() {
     return {
-      avueFormHeight:null,
+      aVueFormHeight:null,
       aVueMsg:{},
       aVueOptions: {
         submitBtn: false,
@@ -87,9 +88,10 @@ export default {
             col[e]=stringToFunc(col[e])
           })
         })
-        if(this.formNew){
+        if(this.formNew||this.formDetail){
           this.$nextTick(()=>{
-            this.avueFormHeight=document.getElementById('avue-form').clientHeight
+            this.aVueFormHeight=document.getElementById('avue-form').clientHeight
+            console.log('aVueFormHeight',this.aVueFormHeight)
           })
         }
       }
@@ -99,16 +101,16 @@ export default {
     });
   },
   watch: {
-    avueFormHeight:{
+    aVueFormHeight:{
       handler(val){
         if(val){
-          window.parent.postMessage({type: 'avueFormHeight', data: val}, '*')
+          window.parent.postMessage({type: 'aVueFormHeight', data: val}, '*')
         }
       }
     },
     aVueValue: {
       handler(val) {
-        if(val && Object.keys(val).length>0 && this.aVueOptions.submitBtn === false){
+        if(val && Object.keys(val).length>0 && this.aVueOptions.submitBtn === false && this.formNew){
           const msg={
             ...this.aVueMsg,
             aVueValue: val,

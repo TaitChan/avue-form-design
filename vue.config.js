@@ -34,7 +34,16 @@ module.exports = {
   },
 
   devServer: {
-    open: true
+    open: true,
+    proxy: {
+      "/api/track-issues": {
+        target: "http://10.10.102.203:33013",
+        changeOrigin: true,
+        pathRewrite: {
+          "^/api/track-issues": "/api/track-issues",
+        },
+      },
+    },
   },
 
   css: {
