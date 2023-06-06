@@ -43,6 +43,13 @@ module.exports = {
           "^/api/track-issues": "/api/track-issues",
         },
       },
+      "/api/devops": {
+        target: "http://10.10.102.202:33013",
+        changeOrigin: true,
+        pathRewrite: {
+          "^/api/devops": "/api/devops",
+        },
+      },
     },
   },
 

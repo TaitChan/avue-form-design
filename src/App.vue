@@ -1,5 +1,5 @@
 <template>
-  <div id="app">
+  <div id="app" v-if="aVueOptions.column">
 <!--    表单渲染器，预览、创建、编辑-->
     <avue-form id="avue-form" v-if="formParser||formNew||formEdit" v-model="aVueValue" :option="aVueOptions"  @submit="handleSaveForm"/>
 <!--    表单详情-->
